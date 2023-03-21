@@ -13,20 +13,63 @@ symbolsCount = {
     "7" : 2 ,
     "*" : 4 ,
     "♫" : 6 ,
-    "☺" : 8
+    "☺" : 8 ,
 }
 
-#---------------------------------------------------------------|
-#                                                               |
-#                                                               |
-'''
-TO DO
-def getSlotMachineSpin():
-'''
-#                                                               |
-#                                                               |
-#---------------------------------------------------------------|
+symbolsValue = {
+    "7" : 5 ,
+    "*" : 4 ,
+    "♫" : 3 ,
+    "☺" : 2 ,
+}
 
+def getWinnings(columns, lines, bet, values):
+    winnings = 0
+    winningLines = []
+    for line in range(lines):
+        symbol = columns[0][line]
+        for column in columns:
+            symbolToCheck = column[line]
+            if symbol != symbolToCheck:
+                break
+        else: 
+            winnings += values[symbol] * bet
+            winningLines.append(line + 1)
+    return winnings, winningLines
+
+#Function that generate the symbols in the columns 
+def getSlotMachineSpin(rows, cols, symbols):
+    allSymbols = []
+    for symbol , symbolsCount in symbols.items():
+        for _ in range(symbolsCount):
+            allSymbols.append(symbol)
+            
+    columns = []
+    for _ in range(cols):
+        column = []
+        #Copying the allSymbols list 
+        currentSymbols = allSymbols[:]
+        for _ in range(rows):
+            value = random.choice(currentSymbols)
+            currentSymbols.remove(value)
+            column.append(value)
+            
+        columns.append(column)
+    
+    return columns
+
+#Function that flips the columns to make them vertical
+def printSlotMachine(columns):
+    for row in range(len(columns[0])):
+        for i, column in enumerate(columns):
+            if i != len(columns) - 1:
+                print(column[row] , end=" | ")
+            else:
+                print(column[row], end="")
+        
+        #Printing a newline
+        print()
+        
 #Function that asks for a deposit amount
 def getDeposit():
     while True:
@@ -77,8 +120,7 @@ def getBet():
             continue
     return betInput
 
-def main():
-    balance = getDeposit()
+def spin(balance):
     lines = getNumberOfLines()
     while True:
         bet = getBet()
@@ -88,5 +130,24 @@ def main():
         else:
             break
     print(f"You are betting {bet}€ on {lines} lines for a total amount of {totalBet}€.")
+    
+    slots = getSlotMachineSpin(ROWS, COLS, symbolsCount)
+    printSlotMachine(slots)
+    winnings, winningLines = getWinnings(slots, lines, bet, symbolsValue)
+    print(f"You won {winnings}€.")
+    print(f"You won on lines:", *winningLines)
+    return winnings - totalBet
+
+def main():
+    balance = getDeposit()
+    while True:
+        print(f"Current balance is {balance}€")
+        play = input("Press enter to play or q to quit. ")
+        if play == "q":
+            break
+        balance += spin(balance)
+        
+    print(f"You left with {balance}€")
+        
     
 main()
